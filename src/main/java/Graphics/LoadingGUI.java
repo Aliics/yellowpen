@@ -1,74 +1,65 @@
 package Graphics;
 
 import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.*;
 
-public class LoadingGUI {
-    private JFrame jFrame;
+public class LoadingGUI implements Runnable {
+    private JFrame frame;
     private JPanel mainPanel;
     private JLabel loadingLabel;
     private JProgressBar loadingBar;
     private JButton cancelLoadingButton;
-    private Thread loadThread;
+    private Runnable[] runnables;
+    private boolean isLoading;
 
-    public LoadingGUI(Runnable runnable) {
+    public LoadingGUI(String title, Runnable runnable) {
         Runnable[] runnables = {runnable};
 
-        new LoadingGUI(runnables);
+        new LoadingGUI(title, runnables);
     }
 
-    public LoadingGUI(Runnable[] runnables) {
-        jFrame = new JFrame();
-        jFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        jFrame.setMinimumSize(mainPanel.getMinimumSize());
-        jFrame.setResizable(false);
+    public LoadingGUI(String title, Runnable[] runnables) {
+        if (isLoading) return;
+        isLoading = true;
 
-        cancelLoadingButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                loadThread.stop();
-                jFrame.dispose();
-            }
-        });
+        this.runnables = runnables;
 
-        jFrame.add(mainPanel);
+        frame = new JFrame();
+        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        frame.setTitle(title);
+        frame.setMinimumSize(mainPanel.getMinimumSize());
+        frame.setLocation(new Point(
+                Toolkit.getDefaultToolkit().getScreenSize().width / 2 - frame.getBounds().width / 2,
+                Toolkit.getDefaultToolkit().getScreenSize().height / 2 - frame.getBounds().height / 2
+        ));
+        frame.setResizable(false);
 
-        jFrame.setVisible(true);
+        cancelLoadingButton.addActionListener(e -> quitLoading());
 
-        loadThread = new Thread(() -> {
-            int end = runnables.length;
-            int current = 1;
+        frame.add(mainPanel);
 
-            for (Runnable runnable : runnables) {
-                setLoadingPercent(current, end);
-
-                current++;
-
-                runnable.run();
-            }
-
-            jFrame.dispose();
-        });
-
-        loadThread.start();
+        frame.setVisible(true);
     }
 
-    public void setLoadingPercent(int min, int max) {
-        double percent = (min != 0 ? (double) min / (double) max: 0) * 100;
-
-        System.out.println(percent);
+    private void setLoadingPercent(int min, int max) {
+        double percent = (min != 0 ? (double) min / (double) max : 0) * 100;
 
         loadingLabel.setText(String.format("Loading [%d / %d]", min, max));
         loadingBar.setValue((int) percent);
     }
 
-    public JFrame getjFrame() {
-        return jFrame;
+    private void quitLoading() {
+        isLoading = false;
+
+        frame.dispose();
     }
 
-    public void setjFrame(JFrame jFrame) {
-        this.jFrame = jFrame;
+    public JFrame getFrame() {
+        return frame;
+    }
+
+    public void setFrame(JFrame frame) {
+        this.frame = frame;
     }
 
     public JPanel getMainPanel() {
@@ -103,11 +94,28 @@ public class LoadingGUI {
         this.cancelLoadingButton = cancelLoadingButton;
     }
 
-    public Thread getLoadThread() {
-        return loadThread;
+    public boolean isLoading() {
+        return isLoading;
     }
 
-    public void setLoadThread(Thread loadThread) {
-        this.loadThread = loadThread;
+    public void setLoading(boolean loading) {
+        isLoading = loading;
+    }
+
+    @Override
+    public void run() {
+        int end = runnables.length;
+        int current = 1;
+
+        for (Runnable runnable : runnables) {
+            if (!isLoading) break;
+            setLoadingPercent(current, end);
+
+            current++;
+
+            runnable.run();
+        }
+
+        quitLoading();
     }
 }

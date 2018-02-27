@@ -1,9 +1,13 @@
 import Graphics.LoadingGUI;
+import Graphics.TextEditorGUI;
 
 import javax.swing.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainEntryPoint {
     public static LoadingGUI loadingGUI;
+    public static Runnable[] runnables;
 
     public static void main(String[] args) {
         try {
@@ -12,27 +16,14 @@ public class MainEntryPoint {
             e.printStackTrace();
         }
 
-        Runnable runnable = new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        };
+        List<Runnable> runnableArray = new ArrayList<>();
+        runnableArray.add(new TextEditorGUI("Main Window"));
 
-        Runnable[] runnables = {
-                runnable,
-                runnable,
-                runnable,
-                runnable,
-                runnable,
-                runnable,
-                runnable
-        };
+        runnables = new Runnable[runnableArray.size()];
 
-        loadingGUI = new LoadingGUI(runnables);
+        runnableArray.toArray(runnables);
+
+        loadingGUI = new LoadingGUI("Initial Setup", runnables);
+        loadingGUI.run();
     }
 }
