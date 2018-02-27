@@ -7,6 +7,7 @@ import javax.swing.*;
 public class TextEditorGUI implements Loadable {
     private JFrame frame;
     private JPanel mainPanel;
+    private JTextArea textArea;
     private String title;
 
     public TextEditorGUI(String title) {

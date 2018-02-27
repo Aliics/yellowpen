@@ -39,6 +39,8 @@ public class LoadingGUI implements Loadable {
                 displayHeight / 2 - frameHeight / 2
         ));
 
+        cancelLoadingButton.addActionListener(actionEvent -> frame.dispose());
+
         frame.setVisible(true);
     }
 
