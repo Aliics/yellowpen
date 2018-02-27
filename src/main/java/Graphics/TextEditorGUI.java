@@ -1,8 +1,10 @@
 package Graphics;
 
+import Tools.Loadable;
+
 import javax.swing.*;
 
-public class TextEditorGUI implements Runnable {
+public class TextEditorGUI implements Loadable {
     private JFrame frame;
     private JPanel mainPanel;
     private String title;
@@ -12,31 +14,18 @@ public class TextEditorGUI implements Runnable {
     }
 
     @Override
-    public void run() {
-        frame = new JFrame();
+    public void init() {
+        frame = new JFrame(title);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        frame.setTitle(title);
         frame.setMinimumSize(mainPanel.getMinimumSize());
-        frame.setPreferredSize(mainPanel.getPreferredSize());
 
         frame.add(mainPanel);
+    }
+
+    @Override
+    public void run() {
+        init();
 
         frame.setVisible(true);
-    }
-
-    public JFrame getFrame() {
-        return frame;
-    }
-
-    public void setFrame(JFrame frame) {
-        this.frame = frame;
-    }
-
-    public JPanel getMainPanel() {
-        return mainPanel;
-    }
-
-    public void setMainPanel(JPanel mainPanel) {
-        this.mainPanel = mainPanel;
     }
 }

@@ -1,121 +1,66 @@
 package Graphics;
 
+import Tools.Loadable;
+
 import javax.swing.*;
 import java.awt.*;
 
-public class LoadingGUI implements Runnable {
+public class LoadingGUI implements Loadable {
     private JFrame frame;
     private JPanel mainPanel;
-    private JLabel loadingLabel;
     private JProgressBar loadingBar;
+    private JLabel loadingLabel;
     private JButton cancelLoadingButton;
-    private Runnable[] runnables;
-    private boolean isLoading;
+    private String title;
+    private Loadable[] loadables;
 
-    public LoadingGUI(String title, Runnable runnable) {
-        Runnable[] runnables = {runnable};
-
-        new LoadingGUI(title, runnables);
+    public LoadingGUI(String title, Loadable[] loadables) {
+        this.title = title;
+        this.loadables = new Loadable[loadables.length];
+        this.loadables = loadables;
     }
 
-    public LoadingGUI(String title, Runnable[] runnables) {
-        if (isLoading) return;
-        isLoading = true;
-
-        this.runnables = runnables;
-
-        frame = new JFrame();
+    @Override
+    public void init() {
+        frame = new JFrame(title);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        frame.setTitle(title);
         frame.setMinimumSize(mainPanel.getMinimumSize());
-        frame.setLocation(new Point(
-                Toolkit.getDefaultToolkit().getScreenSize().width / 2 - frame.getBounds().width / 2,
-                Toolkit.getDefaultToolkit().getScreenSize().height / 2 - frame.getBounds().height / 2
-        ));
         frame.setResizable(false);
 
-        cancelLoadingButton.addActionListener(e -> quitLoading());
-
         frame.add(mainPanel);
+
+        int displayWidth = Toolkit.getDefaultToolkit().getScreenSize().width;
+        int displayHeight = Toolkit.getDefaultToolkit().getScreenSize().height;
+        int frameWidth = frame.getBounds().width;
+        int frameHeight = frame.getBounds().height;
+
+        frame.setLocation(new Point(
+                displayWidth / 2 - frameWidth / 2,
+                displayHeight / 2 - frameHeight / 2
+        ));
 
         frame.setVisible(true);
     }
 
-    private void setLoadingPercent(int min, int max) {
-        double percent = (min != 0 ? (double) min / (double) max : 0) * 100;
+    @Override
+    public void run() {
+        init();
 
-        loadingLabel.setText(String.format("Loading [%d / %d]", min, max));
-        loadingBar.setValue((int) percent);
-    }
+        for (int i = 0; i < loadables.length; i++) {
+            if (!frame.isVisible()) break;
 
-    private void quitLoading() {
-        isLoading = false;
+            setProgress(i + 1, loadables.length);
+
+            loadables[i].run();
+        }
 
         frame.dispose();
     }
 
-    public JFrame getFrame() {
-        return frame;
-    }
+    private void setProgress(int min, int max) {
+        double percent = (min != 0 ? (double) min / (double) max : 0) * 100;
 
-    public void setFrame(JFrame frame) {
-        this.frame = frame;
-    }
-
-    public JPanel getMainPanel() {
-        return mainPanel;
-    }
-
-    public void setMainPanel(JPanel mainPanel) {
-        this.mainPanel = mainPanel;
-    }
-
-    public JLabel getLoadingLabel() {
-        return loadingLabel;
-    }
-
-    public void setLoadingLabel(JLabel loadingLabel) {
-        this.loadingLabel = loadingLabel;
-    }
-
-    public JProgressBar getLoadingBar() {
-        return loadingBar;
-    }
-
-    public void setLoadingBar(JProgressBar loadingBar) {
-        this.loadingBar = loadingBar;
-    }
-
-    public JButton getCancelLoadingButton() {
-        return cancelLoadingButton;
-    }
-
-    public void setCancelLoadingButton(JButton cancelLoadingButton) {
-        this.cancelLoadingButton = cancelLoadingButton;
-    }
-
-    public boolean isLoading() {
-        return isLoading;
-    }
-
-    public void setLoading(boolean loading) {
-        isLoading = loading;
-    }
-
-    @Override
-    public void run() {
-        int end = runnables.length;
-        int current = 1;
-
-        for (Runnable runnable : runnables) {
-            if (!isLoading) break;
-            setLoadingPercent(current, end);
-
-            current++;
-
-            runnable.run();
-        }
-
-        quitLoading();
+        loadingLabel.setText(String.format("Loading [ %d / %d ]", min, max));
+        loadingBar.setValue((int) percent);
     }
 }

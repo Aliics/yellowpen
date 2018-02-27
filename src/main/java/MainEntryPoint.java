@@ -1,29 +1,26 @@
 import Graphics.LoadingGUI;
 import Graphics.TextEditorGUI;
+import Tools.Loadable;
 
 import javax.swing.*;
-import java.util.ArrayList;
-import java.util.List;
 
 public class MainEntryPoint {
     public static LoadingGUI loadingGUI;
-    public static Runnable[] runnables;
 
     public static void main(String[] args) {
+        setLookAndFeel("com.sun.java.swing.plaf.gtk.GTKLookAndFeel");
+
+        Loadable[] initialLoad = {new TextEditorGUI("Main Window")};
+
+        loadingGUI = new LoadingGUI("Inital Setup", initialLoad);
+        loadingGUI.run();
+    }
+
+    static void setLookAndFeel(String lookAndFeel) {
         try {
-            UIManager.setLookAndFeel("com.sun.java.swing.plaf.gtk.GTKLookAndFeel");
+            UIManager.setLookAndFeel(lookAndFeel);
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-        List<Runnable> runnableArray = new ArrayList<>();
-        runnableArray.add(new TextEditorGUI("Main Window"));
-
-        runnables = new Runnable[runnableArray.size()];
-
-        runnableArray.toArray(runnables);
-
-        loadingGUI = new LoadingGUI("Initial Setup", runnables);
-        loadingGUI.run();
     }
 }
